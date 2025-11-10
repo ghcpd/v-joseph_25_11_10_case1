@@ -1,50 +1,64 @@
-====================================================================
-PRODUCTMANAGER v2.1 - DOCUMENTATION DEFECT REPORT
-====================================================================
+Documentation defects identified while verifying examples in README.md
 
-[INCORRECT DOCS]
-1. add_product parameter mismatch:
-   - README uses (title, cost, amount, labels)
-   - Implementation expects (name, price, stock, tags)
-   - Error trace:
-     TypeError: add_product() got an unexpected keyword argument 'title'
+1) Incorrect parameter names in README examples (MISMATCH)
+ - README usage: mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=[...])
+ - Actual function signature: add_product(name: str, price: float, stock: int = 0, tags: Optional[List[str]] = None)
+ - Evidence: running this example will raise TypeError: add_product() got an unexpected keyword argument 'title'
 
-2. Invalid parameter value range:
-   - README uses cost = -1000 and amount = -5
-   - Implementation requires price > 0 and stock >= 0
+  Sample trace (TypeError):
+  TypeError: ProductManager.add_product() got an unexpected keyword argument 'title'
 
-3. Wrong method name:
-   - README calls modify_stock() but implementation provides update_stock()
+2) Invalid ranges shown in README (INVALID INPUT)
+ - README uses negative price and negative stock; actual code raises ValueError for negative price or stock.
+ - Evidence: add_product(name="Laptop", price=-1000.0, stock=-5) raises ValueError: Price must be positive.
 
-4. Wrong argument name:
-   - README uses available_only=True
-   - Implementation expects include_out_of_stock=False
+  Sample trace (ValueError):
+  ValueError: Price must be positive.
 
-5. Old method name:
-   - README calls calculate_total_value()
-   - Implementation uses get_total_value()
+3) Incorrect function name to update stock (MISMATCH)
+ - README usage: mgr.modify_stock(pid, new_value=10)
+ - Actual function name: update_stock(product_id: str, delta: int)
+ - Evidence: modify_stock attribute missing -> AttributeError
 
-6. Wrong export method and format:
-   - README calls export_inventory_to_csv("inventory.csv")
-   - Implementation provides export_inventory(filepath)
-   - Only JSON export supported, not CSV.
+  Sample trace (AttributeError):
+  AttributeError: 'ProductManager' object has no attribute 'modify_stock'
+Actual run outputs when executing original README examples (run_readme_examples.py):
 
-[OUTDATED DOCS]
-7. Password-protected export removed:
-   - README still mentions export_inventory(password="mypwd")
-   - No such argument in current implementation.
+Trying to add product with wrong parameter names (expected to fail)
+ERROR add_product with bad params -> TypeError ProductManager.add_product() got an unexpected keyword argument 'title'
+Trying wrong update function name (expected to fail)
+ERROR modify_stock -> AttributeError 'ProductManager' object has no attribute 'modify_stock'
+Trying list_products available_only param (expected to call but mismatch param)
+ERROR list_products -> TypeError ProductManager.list_products() got an unexpected keyword argument 'available_only'
+Trying get_total_value method mismatch (expected to fail if method name is incorrect)
+ERROR calculate_total_value -> AttributeError 'ProductManager' object has no attribute 'calculate_total_value'
+Trying export inventory to csv (expected to exist but the format is json)
+ERROR export_inventory_to_csv -> AttributeError 'ProductManager' object has no attribute 'export_inventory_to_csv'
+Trying to get activity logs with missing arg docs
+Activity logs length -> 0
 
-8. Supported currency list outdated:
-   - README lists "BTC" as supported
-   - Implementation has no validation for currency at all (no restriction), so info is obsolete.
 
-[MISSING DOCS]
-9. Missing explanation for list_products() filters:
-   - README omits `tag_filter` usage and the behavior of `include_out_of_stock`.
+4) list_products usage - param name mismatch and semantics (MISMATCH)
+ - README uses available_only=True, which does not exist. The correct param is include_out_of_stock: bool = True.
+ - To list available only, set include_out_of_stock=False.
 
-10. Missing detail for get_activity_log(limit):
-   - README shows usage without limit but never explains default limit (10) or truncation behavior.
+5) get_total_value method name outdated (OUTDATED)
+ - README uses calculate_total_value(), actual method is get_total_value()
 
-====================================================================
-TOTAL DEFECTS FOUND: 10
-====================================================================
+6) Export format and function name mismatch (MISMATCH/OUTDATED)
+ - README uses export_inventory_to_csv("inventory.csv"), actual method is export_inventory(filepath: str) and writes JSON.
+
+7) Password-protected export documented but not implemented (OUTDATED / MISSING FEATURE)
+ - README mentions password-protected export (export_inventory(password="mypwd")) but current implementation has no such parameter.
+
+8) Activity log method docs: missing a documented 'limit' param (MISSING DOCS)
+ - README uses get_activity_log() but does not document that you can pass a limit: get_activity_log(limit: int = 10)
+
+9) Currency validation and supported currencies incorrectly documented (MISSING/OUTDATED)
+ - README lists supported currency values but ProductManager does not validate currency or limit to that set. Document that currency is a free-form string.
+
+10) Tag filtering not documented properly (MISSING DOCS)
+ - README mentions tag-filtering but does not show the correct param name: tag_filter
+
+Summary:
+ - Most examples use incorrect parameter names or outdated method names. Tests and corrected examples provided in corrected_readme.md.

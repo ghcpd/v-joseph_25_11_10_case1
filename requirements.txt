@@ -1,0 +1,4 @@
+# Requirements for running tutorial and tests
+# The sample product library has no external runtime dependencies.
+# Use pytest if you want to run tests under that framework.
+pytest

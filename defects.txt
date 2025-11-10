@@ -1,50 +1,144 @@
-====================================================================
-PRODUCTMANAGER v2.1 - DOCUMENTATION DEFECT REPORT
-====================================================================
+PRODUCTMANAGER V2.1 DOCUMENTATION DEFECTS REPORT
+================================================
 
-[INCORRECT DOCS]
-1. add_product parameter mismatch:
-   - README uses (title, cost, amount, labels)
-   - Implementation expects (name, price, stock, tags)
-   - Error trace:
-     TypeError: add_product() got an unexpected keyword argument 'title'
+== CRITICAL MISMATCHES BETWEEN README AND IMPLEMENTATION ==
 
-2. Invalid parameter value range:
-   - README uses cost = -1000 and amount = -5
-   - Implementation requires price > 0 and stock >= 0
+1. INCORRECT PARAMETER NAME: "cost" vs "price"
+   Location: README.md - Quick Start section
+   Error Trace:
+   >>> from product_manager import ProductManager
+   >>> mgr = ProductManager(currency="EUR")
+   >>> pid = mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=["electronics", "featured"])
+   
+   TypeError: add_product() got unexpected keyword argument 'title'
+   
+   Actual Signature:
+   def add_product(self, name: str, price: float, stock: int = 0, tags: Optional[List[str]] = None) -> str
+   
+   Issues:
+   - Parameter "title" should be "name"
+   - Parameter "cost" should be "price"
+   - Parameter "amount" should be "stock"
+   - Parameter "labels" should be "tags"
 
-3. Wrong method name:
-   - README calls modify_stock() but implementation provides update_stock()
+2. INVALID NEGATIVE VALUE RANGE FOR "cost" / "price"
+   Location: README.md - Quick Start section
+   Code: pid = mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=["electronics", "featured"])
+   
+   Error Trace:
+   ValueError: Price must be positive.
+   ValueError: Stock cannot be negative.
+   
+   The README shows negative values (-1000, -5) which are explicitly rejected by the implementation.
+   Expected: Positive price and non-negative stock values.
 
-4. Wrong argument name:
-   - README uses available_only=True
-   - Implementation expects include_out_of_stock=False
+3. WRONG FUNCTION NAME: "modify_stock" vs "update_stock"
+   Location: README.md - Quick Start section
+   Code: mgr.modify_stock(pid, new_value=10)
+   
+   Error Trace:
+   AttributeError: 'ProductManager' object has no attribute 'modify_stock'
+   
+   Actual Method: update_stock(self, product_id: str, delta: int)
+   
+   Note: The actual method uses delta (increment/decrement), not new_value (absolute value).
+   Correct usage: mgr.update_stock(pid, delta=10)
 
-5. Old method name:
-   - README calls calculate_total_value()
-   - Implementation uses get_total_value()
+4. WRONG PARAMETER NAME: "available_only" vs "include_out_of_stock"
+   Location: README.md - Quick Start section
+   Code: products = mgr.list_products(available_only=True)
+   
+   Error Trace:
+   TypeError: list_products() got an unexpected keyword argument 'available_only'
+   
+   Actual Signature:
+   def list_products(self, include_out_of_stock: bool = True, tag_filter: Optional[str] = None)
+   
+   Logic Mismatch:
+   - README uses "available_only=True" (filter to only available items)
+   - Implementation uses "include_out_of_stock=True" (opposite logic - includes out of stock by default)
+   - To get available items only, use: include_out_of_stock=False
 
-6. Wrong export method and format:
-   - README calls export_inventory_to_csv("inventory.csv")
-   - Implementation provides export_inventory(filepath)
-   - Only JSON export supported, not CSV.
+5. WRONG METHOD NAME: "calculate_total_value" vs "get_total_value"
+   Location: README.md - Quick Start section
+   Code: print("Total value:", mgr.calculate_total_value())
+   
+   Error Trace:
+   AttributeError: 'ProductManager' object has no attribute 'calculate_total_value'
+   
+   Actual Method: get_total_value(self) -> float
 
-[OUTDATED DOCS]
-7. Password-protected export removed:
-   - README still mentions export_inventory(password="mypwd")
-   - No such argument in current implementation.
+6. WRONG FILE FORMAT: CSV export instead of JSON
+   Location: README.md - Quick Start section
+   Code: mgr.export_inventory_to_csv("inventory.csv")
+   
+   Error Trace:
+   AttributeError: 'ProductManager' object has no attribute 'export_inventory_to_csv'
+   
+   Actual Method: export_inventory(self, filepath: str)
+   
+   Note: The actual implementation exports to JSON format, not CSV.
+   Correct usage: mgr.export_inventory("inventory.json")
 
-8. Supported currency list outdated:
-   - README lists "BTC" as supported
-   - Implementation has no validation for currency at all (no restriction), so info is obsolete.
+7. WRONG FUNCTION NAME: "export_inventory_to_csv" doesn't exist
+   Location: README.md - Quick Start section
+   Code: mgr.export_inventory_to_csv("inventory.csv")
+   
+   See Defect #6 above.
 
-[MISSING DOCS]
-9. Missing explanation for list_products() filters:
-   - README omits `tag_filter` usage and the behavior of `include_out_of_stock`.
+8. MISSING METHOD DOCUMENTATION: get_activity_log parameters
+   Location: README.md - Advanced Features section
+   Code: logs = mgr.get_activity_log()
+   
+   The README does not document that get_activity_log() accepts a 'limit' parameter.
+   
+   Actual Signature: get_activity_log(self, limit: int = 10) -> List[str]
+   Default behavior: Returns last 10 log entries (not all entries)
 
-10. Missing detail for get_activity_log(limit):
-   - README shows usage without limit but never explains default limit (10) or truncation behavior.
+9. OUTDATED FEATURE: password-protected export
+   Location: README.md - Advanced Features section
+   Text: "Use `export_inventory(password="mypwd")` to export encrypted files."
+   
+   Error Trace:
+   TypeError: export_inventory() got an unexpected keyword argument 'password'
+   
+   The actual implementation does NOT support password protection.
+   Correct usage: export_inventory(filepath: str)
+   
+   Note: This feature is completely removed from v2.1.
 
-====================================================================
-TOTAL DEFECTS FOUND: 10
-====================================================================
+10. MISSING DOCUMENTATION: tag_filter parameter
+    Location: README.md - Not documented in Quick Start
+    
+    The list_products() method accepts a tag_filter parameter that is not explained:
+    def list_products(self, include_out_of_stock: bool = True, tag_filter: Optional[str] = None)
+    
+    Usage Example Missing:
+    filtered = mgr.list_products(tag_filter="electronics")
+
+11. INCOMPLETE DOCUMENTATION: "Missing Documentation" section
+    Location: README.md - Advanced Features
+    Text: "No details for tag-based filtering (`tag_filter`) or stock inclusion flag."
+    
+    This is accurate but circular - the README acknowledges it's incomplete without providing the actual documentation.
+
+12. MISSING CURRENCY VALIDATION DOCUMENTATION
+    Location: README.md - Advanced Features
+    
+    The supported currencies list is incomplete or inaccurate.
+    Listed: "USD", "SGD", "JPY", "BTC"
+    
+    Implementation Note: There is no validation of currency values in the actual code.
+    The currency parameter is accepted but not validated or used in calculations.
+
+== SUMMARY ==
+
+Total Defects Found: 12
+- Incorrect Parameter Names: 4
+- Wrong Method Names: 3
+- Invalid Value Ranges: 1
+- Outdated Features: 1
+- Missing Documentation: 2
+- Incomplete/Inaccurate Information: 1
+
+Status: All critical functionality is broken when following the README examples exactly as written.

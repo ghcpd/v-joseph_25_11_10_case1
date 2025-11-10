@@ -1,0 +1,12 @@
+{
+  "cba19c67": {
+    "name": "Laptop",
+    "price": 1000.0,
+    "stock": 10,
+    "tags": [
+      "electronics",
+      "featured"
+    ],
+    "created": "2025-11-10 06:04:15.884608"
+  }
+}

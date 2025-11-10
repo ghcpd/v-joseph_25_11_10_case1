@@ -1,50 +1,79 @@
-====================================================================
-PRODUCTMANAGER v2.1 - DOCUMENTATION DEFECT REPORT
-====================================================================
+Documentation defects found while running examples from README.md
+---------------------------------------------------------------
 
-[INCORRECT DOCS]
-1. add_product parameter mismatch:
-   - README uses (title, cost, amount, labels)
-   - Implementation expects (name, price, stock, tags)
-   - Error trace:
-     TypeError: add_product() got an unexpected keyword argument 'title'
+1) add_product: incorrect parameter names and invalid ranges
+   - README example:
+       pid = mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=["electronics", "featured"])
+   - Implementation expects: add_product(name: str, price: float, stock: int = 0, tags: Optional[List[str]] = None)
+   - Behavior: negative price and stock raise ValueError in the library. The wrong parameter names produce TypeError.
+   - Evidence:
+      TypeError: ProductManager.add_product() got an unexpected keyword argument 'title'
+       (Captured from test_files/test_readme_example.py runtime output.)
 
-2. Invalid parameter value range:
-   - README uses cost = -1000 and amount = -5
-   - Implementation requires price > 0 and stock >= 0
+2) update_stock vs modify_stock
+   - README calls mgr.modify_stock(pid, new_value=10)
+   - Implementation has update_stock(product_id: str, delta: int) which changes the stock by delta
+   - Evidence:
+      AttributeError: 'ProductManager' object has no attribute 'modify_stock'
 
-3. Wrong method name:
-   - README calls modify_stock() but implementation provides update_stock()
+3) list_products: wrong param name and logic
+   - README uses mgr.list_products(available_only=True)
+   - Implementation uses include_out_of_stock: bool = True; to list only available items use include_out_of_stock=False
+   - Evidence:
+      TypeError: ProductManager.list_products() got an unexpected keyword argument 'available_only'
 
-4. Wrong argument name:
-   - README uses available_only=True
-   - Implementation expects include_out_of_stock=False
+4) get_total_value vs calculate_total_value
+   - README uses mgr.calculate_total_value()
+   - Implementation has get_total_value() returning a rounded float
+   - Evidence:
+      AttributeError: 'ProductManager' object has no attribute 'calculate_total_value'
 
-5. Old method name:
-   - README calls calculate_total_value()
-   - Implementation uses get_total_value()
+5) export_inventory_to_csv vs export_inventory
+   - README uses mgr.export_inventory_to_csv("inventory.csv")
+   - Implementation provides export_inventory(filepath: str) that writes JSON
+   - Evidence:
+      AttributeError: 'ProductManager' object has no attribute 'export_inventory_to_csv'. Did you mean: 'export_inventory'?
 
-6. Wrong export method and format:
-   - README calls export_inventory_to_csv("inventory.csv")
-   - Implementation provides export_inventory(filepath)
-   - Only JSON export supported, not CSV.
+6) get_activity_log: missing argument docs
+   - README uses mgr.get_activity_log() without docs
+   - Implementation requires an integer limit parameter defaulting to 10; method returns last 'limit' entries
+   - Evidence: the method signature: get_activity_log(self, limit: int = 10) -> List[str]
+    - Evidence: the method signature: get_activity_log(self, limit: int = 10) -> List[str]
+Example error traces captured while running the README example test (test_files/test_readme_example.py):
 
-[OUTDATED DOCS]
-7. Password-protected export removed:
-   - README still mentions export_inventory(password="mypwd")
-   - No such argument in current implementation.
+add_product failed as expected:
+Traceback (most recent call last):
+   File ".../test_readme_example.py", line 11, in run_readme_snippet
+      pid = mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=["electronics", "featured"]) 
+TypeError: ProductManager.add_product() got an unexpected keyword argument 'title'
 
-8. Supported currency list outdated:
-   - README lists "BTC" as supported
-   - Implementation has no validation for currency at all (no restriction), so info is obsolete.
+modify_stock failed as expected:
+Traceback (most recent call last):
+   File ".../test_readme_example.py", line 19, in run_readme_snippet
+      mgr.modify_stock("pid", new_value=10)
+AttributeError: 'ProductManager' object has no attribute 'modify_stock'
 
-[MISSING DOCS]
-9. Missing explanation for list_products() filters:
-   - README omits `tag_filter` usage and the behavior of `include_out_of_stock`.
+list_products failed as expected:
+TypeError: ProductManager.list_products() got an unexpected keyword argument 'available_only'
 
-10. Missing detail for get_activity_log(limit):
-   - README shows usage without limit but never explains default limit (10) or truncation behavior.
+calculate_total_value failed as expected:
+AttributeError: 'ProductManager' object has no attribute 'calculate_total_value'
 
-====================================================================
-TOTAL DEFECTS FOUND: 10
-====================================================================
+export_inventory_to_csv failed as expected:
+AttributeError: 'ProductManager' object has no attribute 'export_inventory_to_csv'. Did you mean: 'export_inventory'?
+
+
+7) Outdated feature: password-protected export
+   - README suggests export_inventory(password="mypwd") - no such parameter exists
+   - Implementation export_inventory(filepath: str) writes JSON and does not support password encryption
+
+8) Currency system not validated
+   - README says supported values include "USD", "SGD", "JPY", "BTC"
+   - Implementation accepts any string as `currency` parameter. No validation or behavior for currency conversion is implemented.
+
+Summary: README contains multiple mismatches in API names, parameter names, default behaviors, and a removed encryption feature. The corrected README includes accurate signatures, usage examples, and clarifying notes.
+
+9) Minor: timezone-naive timestamps and deprecation warnings
+   - Implementation uses datetime.utcnow() which is deprecated in recent Python versions.
+   - Evidence: pytest warnings when running tests: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
+

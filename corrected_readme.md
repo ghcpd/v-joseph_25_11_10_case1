@@ -1,65 +1,79 @@
-# ProductManager v2.1 (Corrected)
+# ProductManager v2.1 — Corrected Usage
 
-ProductManager helps manage and track products for small online stores.
+ProductManager helps manage store products. The README.md examples were out-of-date and used incorrect method/parameter names. This file shows working code and explains the correct signatures.
 
-## Installation
+## Installation (local development)
+
+Create a Python virtual environment and install test requirements:
 
 ```bash
-pip install product-manager
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\Activate.ps1 on Windows PowerShell
+pip install -r requirements.txt
 ```
 
-## Quick Start
+## Quick Start — Correct usage
 
 ```python
 from product_manager import ProductManager
 
-mgr = ProductManager(currency="EUR")
+mgr = ProductManager(currency="EUR")  # currency is informational; no exchange conversion is implemented
 
-# Add a product
-pid = mgr.add_product(name="Laptop", price=1000.00, stock=5, tags=["electronics", "featured"])
+# Add a product — correct parameter names and validation
+pid = mgr.add_product(name="Laptop", price=1000.00, stock=5, tags=["electronics", "featured"]) 
 
-# Update stock
-mgr.update_stock(pid, delta=10)
+# Update stock — delta is added to current stock
+mgr.update_stock(pid, delta=5)  # stock increases by 5
 
-# List only available items
+# List items — to only show in-stock items use include_out_of_stock=False
 products = mgr.list_products(include_out_of_stock=False)
 print(products)
 
-# Get total inventory value
+# Get total value
 print("Total value:", mgr.get_total_value())
 
-# Export to JSON file
+# Export (writes JSON) — use export_inventory
 mgr.export_inventory("inventory.json")
 
-# Fetch recent activity logs
-logs = mgr.get_activity_log(limit=5)
-for line in logs:
-    print(line)
+# Fetch recent activity logs (limit optional)
+logs = mgr.get_activity_log(limit=50)
+print(logs)
 ```
 
-## Advanced Features
+## Advanced Features (updated)
 
-### Currency
-The `currency` argument is optional and used for display only.  
-There is no strict validation on currency codes in v2.1.
+- Password-protected export: This was removed from the library; `export_inventory(password=...)` is not available. Export writes a JSON file.
+- Currency system: The `currency` field is stored but not validated or used for conversion. It is informational only. Supported currency values are not validated in v2.1.
+- Tag filtering: `list_products(tag_filter=<tag>)` filters products by tag. Example: `mgr.list_products(tag_filter="electronics")`
+- Stock inclusion: `include_out_of_stock` decides whether to include stock `0` items. Default is True (include out of stock); set to False to only include in-stock items.
 
-### Product Listing Filters
-You can control which products are returned:
-- `include_out_of_stock`: set to `False` to skip items with zero stock.
-- `tag_filter`: specify a tag to show only products with that label.
-```python
-mgr.list_products(tag_filter="electronics", include_out_of_stock=False)
+## Migration notes
+
+If your code calls old names, replace as follows:
+
+- `title` -> `name`
+- `cost` -> `price` (must be > 0)
+- `amount` -> `stock` (>= 0)
+- `labels` -> `tags`
+- `modify_stock(pid, new_value=N)` -> `update_stock(pid, delta=X)` — adjust to compute delta
+- `calculate_total_value()` -> `get_total_value()`
+- `export_inventory_to_csv(...)` -> `export_inventory(...)` (JSON output)
+
+## Examples and tests
+
+Run the test scripts in `test_files/` to reproduce the examples and verify behavior.
+
+On Windows PowerShell (works with .venv already created):
+
+```powershell
+$env:PYTHONPATH = "<path-to-project-root>"
+& "<path-to-project-root>/.venv/Scripts/python.exe" test_files/test_readme_example.py
+& "<path-to-project-root>/.venv/Scripts/python.exe" test_files/test_product_manager_correct_usage.py
 ```
 
-### Export
-Exports the full inventory as a UTF-8 JSON file using:
-```python
-mgr.export_inventory("inventory.json")
-```
+On Unix / Git Bash you can use the provided script (after making it executable):
 
-### Activity Log
-Retrieve recent system actions with:
-```python
-logs = mgr.get_activity_log(limit=10)
+```bash
+chmod +x run_tests.sh
+./run_tests.sh
 ```
-(Default limit is 10.)

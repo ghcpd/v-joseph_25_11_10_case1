@@ -1,0 +1,50 @@
+====================================================================
+PRODUCTMANAGER v2.1 - DOCUMENTATION DEFECT REPORT
+====================================================================
+
+[INCORRECT DOCS]
+1. add_product parameter mismatch:
+   - README uses (title, cost, amount, labels)
+   - Implementation expects (name, price, stock, tags)
+   - Error trace:
+     TypeError: add_product() got an unexpected keyword argument 'title'
+
+2. Invalid parameter value range:
+   - README uses cost = -1000 and amount = -5
+   - Implementation requires price > 0 and stock >= 0
+
+3. Wrong method name:
+   - README calls modify_stock() but implementation provides update_stock()
+
+4. Wrong argument name:
+   - README uses available_only=True
+   - Implementation expects include_out_of_stock=False
+
+5. Old method name:
+   - README calls calculate_total_value()
+   - Implementation uses get_total_value()
+
+6. Wrong export method and format:
+   - README calls export_inventory_to_csv("inventory.csv")
+   - Implementation provides export_inventory(filepath)
+   - Only JSON export supported, not CSV.
+
+[OUTDATED DOCS]
+7. Password-protected export removed:
+   - README still mentions export_inventory(password="mypwd")
+   - No such argument in current implementation.
+
+8. Supported currency list outdated:
+   - README lists "BTC" as supported
+   - Implementation has no validation for currency at all (no restriction), so info is obsolete.
+
+[MISSING DOCS]
+9. Missing explanation for list_products() filters:
+   - README omits `tag_filter` usage and the behavior of `include_out_of_stock`.
+
+10. Missing detail for get_activity_log(limit):
+   - README shows usage without limit but never explains default limit (10) or truncation behavior.
+
+====================================================================
+TOTAL DEFECTS FOUND: 10
+====================================================================

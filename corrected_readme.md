@@ -1,65 +1,59 @@
-# ProductManager v2.1 (Corrected)
+# ProductManager v2.1 - Corrected README
 
-ProductManager helps manage and track products for small online stores.
+ProductManager helps manage store products efficiently.
 
 ## Installation
 
+Clone the repo and, optionally, install the test dependencies in a venv:
+
 ```bash
-pip install product-manager
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
 ```
 
+Note: The original README suggested `pip install product-manager` — this package isn't published to PyPI in this repo. Use the local module `product_manager.py` instead.
+
 ## Quick Start
+
+Corrected example for using ProductManager API (these examples run with the current implementation):
 
 ```python
 from product_manager import ProductManager
 
-mgr = ProductManager(currency="EUR")
+mgr = ProductManager(currency="EUR")  # currency is a free-form string; not validated internally
 
-# Add a product
-pid = mgr.add_product(name="Laptop", price=1000.00, stock=5, tags=["electronics", "featured"])
+# Add a product (use actual parameter names: name, price, stock, tags)
+pid = mgr.add_product(name="Laptop", price=1000.0, stock=5, tags=["electronics", "featured"])
 
-# Update stock
-mgr.update_stock(pid, delta=10)
+# Update stock (use update_stock(product_id, delta) to add or remove units)
+mgr.update_stock(pid, 5)  # add 5 units
 
-# List only available items
+# List only available items (set include_out_of_stock=False)
 products = mgr.list_products(include_out_of_stock=False)
 print(products)
 
-# Get total inventory value
+# Get total value (use get_total_value())
 print("Total value:", mgr.get_total_value())
 
-# Export to JSON file
+# Export inventory to JSON (the method export_inventory writes JSON)
 mgr.export_inventory("inventory.json")
 
-# Fetch recent activity logs
-logs = mgr.get_activity_log(limit=5)
-for line in logs:
-    print(line)
+# Fetch activity logs (you can pass a limit, default is 10)
+logs = mgr.get_activity_log(limit=20)
+print(logs)
 ```
 
 ## Advanced Features
 
-### Currency
-The `currency` argument is optional and used for display only.  
-There is no strict validation on currency codes in v2.1.
+- Password-protected export is not implemented in the current code. The README previously referenced an `export_inventory(password="mypwd")` signature, which does not exist — the method is currently `export_inventory(filepath: str)` and writes a JSON file.
 
-### Product Listing Filters
-You can control which products are returned:
-- `include_out_of_stock`: set to `False` to skip items with zero stock.
-- `tag_filter`: specify a tag to show only products with that label.
-```python
-mgr.list_products(tag_filter="electronics", include_out_of_stock=False)
-```
+- Currency: The code accepts any string as currency; there is no validation. Typical currency examples: "USD", "EUR", "SGD", "JPY", "BTC".
 
-### Export
-Exports the full inventory as a UTF-8 JSON file using:
-```python
-mgr.export_inventory("inventory.json")
-```
+- Tag filtering: Use `list_products(tag_filter="tag")` to filter results by tag.
 
-### Activity Log
-Retrieve recent system actions with:
-```python
-logs = mgr.get_activity_log(limit=10)
-```
-(Default limit is 10.)
+- include_out_of_stock: Set to False to exclude products that have zero stock.
+
+## Notes
+
+The README examples were previously out-of-sync with the implementation — this corrected README fixes parameter names, shows proper behavior for stock updates, and clarifies the export and activity log usage.

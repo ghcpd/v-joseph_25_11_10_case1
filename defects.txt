@@ -1,50 +1,45 @@
-====================================================================
-PRODUCTMANAGER v2.1 - DOCUMENTATION DEFECT REPORT
-====================================================================
+Defects found while running README examples (captured during tests/run_readme_examples.py):
 
-[INCORRECT DOCS]
-1. add_product parameter mismatch:
-   - README uses (title, cost, amount, labels)
-   - Implementation expects (name, price, stock, tags)
-   - Error trace:
-     TypeError: add_product() got an unexpected keyword argument 'title'
+1) add_product parameter mismatch (Incorrect docs)
+	- README call: mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=[...])
+	- Actual signature: add_product(name: str, price: float, stock: int = 0, tags: Optional[List[str]] = None)
+	- Evidence (TypeError):
+	  Traceback (most recent call last):
+		 File "tests/run_readme_examples.py", line 18, in run_example
+			pid = mgr.add_product(title="Laptop", cost=-1000, amount=-5, labels=["electronics", "featured"])
+	  TypeError: ProductManager.add_product() got an unexpected keyword argument 'title'
 
-2. Invalid parameter value range:
-   - README uses cost = -1000 and amount = -5
-   - Implementation requires price > 0 and stock >= 0
+	- Notes: README also uses negative values (cost=-1000, amount=-5) which are invalid per implementation (price must be >0, stock >=0).
 
-3. Wrong method name:
-   - README calls modify_stock() but implementation provides update_stock()
+2) update stock function name mismatch (Incorrect docs)
+	- README call: mgr.modify_stock(pid, new_value=10)
+	- Actual method: update_stock(product_id: str, delta: int)
+	- Evidence (AttributeError):
+	  AttributeError: 'ProductManager' object has no attribute 'modify_stock'
 
-4. Wrong argument name:
-   - README uses available_only=True
-   - Implementation expects include_out_of_stock=False
+3) list_products parameter mismatch (Incorrect docs)
+	- README call: mgr.list_products(available_only=True)
+	- Actual signature: list_products(include_out_of_stock: bool = True, tag_filter: Optional[str] = None)
+	- Evidence (TypeError):
+	  TypeError: ProductManager.list_products() got an unexpected keyword argument 'available_only'
 
-5. Old method name:
-   - README calls calculate_total_value()
-   - Implementation uses get_total_value()
+4) total value method name mismatch (Incorrect docs)
+	- README call: mgr.calculate_total_value()
+	- Actual method: get_total_value()
+	- Evidence (AttributeError):
+	  AttributeError: 'ProductManager' object has no attribute 'calculate_total_value'
 
-6. Wrong export method and format:
-   - README calls export_inventory_to_csv("inventory.csv")
-   - Implementation provides export_inventory(filepath)
-   - Only JSON export supported, not CSV.
+5) export method mismatch & format (Incorrect docs / Outdated docs)
+	- README call: mgr.export_inventory_to_csv("inventory.csv")
+	- Actual method: export_inventory(filepath: str) which writes JSON
+	- Evidence (AttributeError):
+	  AttributeError: 'ProductManager' object has no attribute 'export_inventory_to_csv'. Did you mean: 'export_inventory'?
 
-[OUTDATED DOCS]
-7. Password-protected export removed:
-   - README still mentions export_inventory(password="mypwd")
-   - No such argument in current implementation.
+6) get_activity_log default empty / missing docs
+	- README calls get_activity_log() without explaining the optional "limit" parameter. The method returns the last N entries; in our run it returned an empty list because no successful operations completed.
 
-8. Supported currency list outdated:
-   - README lists "BTC" as supported
-   - Implementation has no validation for currency at all (no restriction), so info is obsolete.
+7) Advanced features outdated (Outdated docs / Missing docs)
+	- README mentions password-protected export (`export_inventory(password=...)`) and a currency list enforcement. The current implementation does not support password protection and does not enforce a currency whitelist.
 
-[MISSING DOCS]
-9. Missing explanation for list_products() filters:
-   - README omits `tag_filter` usage and the behavior of `include_out_of_stock`.
+Summary: README examples contain outdated function names, parameter names, invalid example values, and references to removed features. See `corrected_readme.md` for working examples.
 
-10. Missing detail for get_activity_log(limit):
-   - README shows usage without limit but never explains default limit (10) or truncation behavior.
-
-====================================================================
-TOTAL DEFECTS FOUND: 10
-====================================================================

@@ -1,0 +1,11 @@
+# ProductManager v2.1 Requirements
+# This project only requires Python standard library - no external dependencies
+
+# Core library (included in Python standard library):
+# - json (for export_inventory)
+# - uuid (for product ID generation)
+# - typing (for type hints)
+# - datetime (for activity logging)
+
+# For development/testing (optional):
+pytest>=7.0
